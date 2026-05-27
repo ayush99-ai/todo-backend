@@ -1,182 +1,106 @@
-const Task = require('../models/Task');
+const taskService = require("../services/taskService");
 
-
-// Create Task
-const createTask = async (req, res) => {
-  try {
-    const { title, description, status, dueDate } = req.body;
-
-    if (!title) {
-      return res.status(400).json({
-        message: 'Title is required'
-      });
-    }
-
-    const newTask = await Task.create({
-      title,
-      description,
-      status,
-      dueDate
-    });
-
-    res.status(201).json({
-      message: 'Task created successfully',
-      task: newTask
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server Error'
-    });
-  }
-};
-
-
-// Get All Tasks
+// getting all tasks
 const getTasks = async (req, res) => {
+
   try {
-    const { status } = req.query;
 
-    let tasks;
-
-    if (status) {
-      tasks = await Task.find({ status });
-    } else {
-      tasks = await Task.find();
-    }
+    const tasks = await taskService.getAllTasks();
 
     res.json(tasks);
+
   } catch (error) {
+
     res.status(500).json({
-      message: 'Server Error'
+      message: error.message
     });
+
   }
 };
 
+// creating task
+const createTask = async (req, res) => {
 
-// Get Single Task
-const getSingleTask = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
 
-    if (!task) {
-      return res.status(404).json({
-        message: 'Task not found'
-      });
-    }
+    const task = await taskService.createTask(req.body);
 
-    res.json(task);
+    res.status(201).json(task);
+
   } catch (error) {
-    res.status(500).json({
-      message: 'Server Error'
+
+    res.status(400).json({
+      message: error.message
     });
+
   }
 };
 
+// deleting task
+const deleteTask = async (req, res) => {
 
-// Update Task
+  try {
+
+    await taskService.deleteTask(req.params.id);
+
+    res.json({
+      message: "Task deleted"
+    });
+
+  } catch (error) {
+
+    res.status(400).json({
+      message: error.message
+    });
+
+  }
+};
+
+// updating task
 const updateTask = async (req, res) => {
+
   try {
-    const updatedTask = await Task.findByIdAndUpdate(
+
+    const updatedTask = await taskService.updateTask(
       req.params.id,
-      req.body,
-      {
-        new: true
-      }
+      req.body
     );
 
-    if (!updatedTask) {
-      return res.status(404).json({
-        message: 'Task not found'
-      });
-    }
+    res.json(updatedTask);
 
-    res.json({
-      message: 'Task updated successfully',
-      task: updatedTask
-    });
   } catch (error) {
-    res.status(500).json({
-      message: 'Server Error'
+
+    res.status(400).json({
+      message: error.message
     });
+
   }
 };
 
-
-// Delete Task
-const deleteTask = async (req, res) => {
-  try {
-    const deletedTask = await Task.findByIdAndDelete(req.params.id);
-
-    if (!deletedTask) {
-      return res.status(404).json({
-        message: 'Task not found'
-      });
-    }
-
-    res.json({
-      message: 'Task deleted successfully'
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server Error'
-    });
-  }
-};
-
-
-// Search Task
+// searching tasks
 const searchTask = async (req, res) => {
-  try {
-    const { title } = req.query;
 
-    const tasks = await Task.find({
-      title: {
-        $regex: title,
-        $options: 'i'
-      }
-    });
+  try {
+
+    const text = req.query.q || "";
+
+    const tasks = await taskService.searchTasks(text);
 
     res.json(tasks);
+
   } catch (error) {
+
     res.status(500).json({
-      message: 'Server Error'
+      message: error.message
     });
-  }
-};
 
-
-// Update Status
-const updateStatus = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id);
-
-    if (!task) {
-      return res.status(404).json({
-        message: 'Task not found'
-      });
-    }
-
-    task.status = req.body.status;
-
-    await task.save();
-
-    res.json({
-      message: 'Task status updated',
-      task
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server Error'
-    });
   }
 };
 
 module.exports = {
-  createTask,
   getTasks,
-  getSingleTask,
-  updateTask,
+  createTask,
   deleteTask,
-  searchTask,
-  updateStatus
+  updateTask,
+  searchTask
 };
