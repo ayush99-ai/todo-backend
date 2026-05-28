@@ -1,54 +1,68 @@
-const taskService = require("../services/taskServices");
+const Task = require("../models/Task");
 
 // get all tasks
 const getTasks = async (req, res) => {
-  try {
-    const tasks = await taskService.getAllTasks();
-    res.json(tasks);
-  } catch (err) {
-    res.status(500).json({ message: "Something went wrong" });
-  }
+  const tasks = await Task.find().sort({ createdAt: -1 });
+  res.json(tasks);
 };
 
 // create task
 const createTask = async (req, res) => {
   try {
-    const task = await taskService.createTask(req.body);
-    res.status(201).json(task);
+    const task = await Task.create({
+      title: req.body.title,
+      status: req.body.status || "pending"
+    });
+
+    res.json(task);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: "Error creating task" });
   }
 };
 
-// update task
+// update task (title + status)
 const updateTask = async (req, res) => {
   try {
-    const task = await taskService.updateTask(req.params.id, req.body);
+    const task = await Task.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
     res.json(task);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: "Update failed" });
   }
 };
 
 // delete task
 const deleteTask = async (req, res) => {
   try {
-    await taskService.deleteTask(req.params.id);
-    res.json({ message: "Task removed" });
+    const task = await Task.findByIdAndDelete(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    res.json({ message: "Task deleted" });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: "Delete failed" });
   }
 };
 
 // search task
 const searchTask = async (req, res) => {
-  try {
-    const q = req.query.q || "";
-    const tasks = await taskService.searchTasks(q);
-    res.json(tasks);
-  } catch (err) {
-    res.status(500).json({ message: "Search failed" });
-  }
+  const q = req.query.q || "";
+
+  const tasks = await Task.find({
+    title: { $regex: q, $options: "i" }
+  });
+
+  res.json(tasks);
 };
 
 module.exports = {

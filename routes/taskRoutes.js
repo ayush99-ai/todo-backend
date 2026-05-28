@@ -9,25 +9,10 @@ const {
   searchTask
 } = require("../controllers/taskController");
 
-const {
-  createTaskValidation,
-  validationResultHandler,
-  idValidation
-} = require("../middleware/validation");
-
-// get all tasks
 router.get("/", getTasks);
-
-// create task
-router.post("/", createTaskValidation, validationResultHandler, createTask);
-
-// search task
+router.post("/", createTask);
 router.get("/search", searchTask);
-
-// update task
-router.put("/:id", idValidation, updateTask);
-
-// delete task
-router.delete("/:id", idValidation, deleteTask);
+router.put("/:id", updateTask);
+router.delete("/:id", deleteTask);
 
 module.exports = router;
