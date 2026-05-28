@@ -1,24 +1,24 @@
-const taskService = require("../services/taskService");
+const taskService = require("../services/taskServices");
 
-// getting all tasks
+// getting all tasks from database
 const getTasks = async (req, res) => {
 
   try {
 
     const tasks = await taskService.getAllTasks();
 
-    res.json(tasks);
+    res.status(200).json(tasks);
 
   } catch (error) {
 
     res.status(500).json({
-      message: error.message
+      message: "Unable to fetch tasks"
     });
 
   }
 };
 
-// creating task
+// creating new task
 const createTask = async (req, res) => {
 
   try {
@@ -29,8 +29,56 @@ const createTask = async (req, res) => {
 
   } catch (error) {
 
-    res.status(400).json({
-      message: error.message
+    // if title is missing
+    if (error.message.includes("required")) {
+
+      return res.status(400).json({
+        message: error.message
+      });
+
+    }
+
+    res.status(500).json({
+      message: "Task could not be created"
+    });
+
+  }
+};
+
+// updating existing task
+const updateTask = async (req, res) => {
+
+  try {
+
+    const updatedTask = await taskService.updateTask(
+      req.params.id,
+      req.body
+    );
+
+    res.status(200).json(updatedTask);
+
+  } catch (error) {
+
+    // invalid id
+    if (error.message === "Invalid task id") {
+
+      return res.status(400).json({
+        message: "Please enter valid task id"
+      });
+
+    }
+
+    // task not found
+    if (error.message === "Task not found") {
+
+      return res.status(404).json({
+        message: "Task not found"
+      });
+
+    }
+
+    res.status(500).json({
+      message: "Could not update task"
     });
 
   }
@@ -43,35 +91,22 @@ const deleteTask = async (req, res) => {
 
     await taskService.deleteTask(req.params.id);
 
-    res.json({
-      message: "Task deleted"
+    res.status(200).json({
+      message: "Task deleted successfully"
     });
 
   } catch (error) {
 
-    res.status(400).json({
-      message: error.message
-    });
+    if (error.message === "Task not found") {
 
-  }
-};
+      return res.status(404).json({
+        message: "Task not found"
+      });
 
-// updating task
-const updateTask = async (req, res) => {
+    }
 
-  try {
-
-    const updatedTask = await taskService.updateTask(
-      req.params.id,
-      req.body
-    );
-
-    res.json(updatedTask);
-
-  } catch (error) {
-
-    res.status(400).json({
-      message: error.message
+    res.status(500).json({
+      message: "Could not delete task"
     });
 
   }
@@ -86,12 +121,12 @@ const searchTask = async (req, res) => {
 
     const tasks = await taskService.searchTasks(text);
 
-    res.json(tasks);
+    res.status(200).json(tasks);
 
   } catch (error) {
 
     res.status(500).json({
-      message: error.message
+      message: "Search failed"
     });
 
   }
@@ -100,7 +135,7 @@ const searchTask = async (req, res) => {
 module.exports = {
   getTasks,
   createTask,
-  deleteTask,
   updateTask,
+  deleteTask,
   searchTask
 };

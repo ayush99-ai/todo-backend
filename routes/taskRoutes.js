@@ -11,23 +11,36 @@ const {
 } = require("../controllers/taskController");
 
 const {
-  taskValidation,
+  createTaskValidation,
+  updateTaskValidation,
+  idValidation,
   validate
 } = require("../middleware/validation");
 
 router.get("/", getTasks);
 
+router.get("/search", searchTask);
+
 router.post(
   "/",
-  taskValidation,
+  createTaskValidation,
   validate,
   createTask
 );
 
-router.delete("/:id", deleteTask);
+router.put(
+  "/:id",
+  idValidation,
+  updateTaskValidation,
+  validate,
+  updateTask
+);
 
-router.put("/:id", updateTask);
-
-router.get("/search", searchTask);
+router.delete(
+  "/:id",
+  idValidation,
+  validate,
+  deleteTask
+);
 
 module.exports = router;
