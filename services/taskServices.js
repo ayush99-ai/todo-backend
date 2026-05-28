@@ -1,25 +1,22 @@
 const Task = require("../models/Task");
 
-// get all tasks from DB
+// get all tasks
 const getAllTasks = async () => {
-  const tasks = await Task.find().sort({ createdAt: -1 });
-  return tasks;
+  return await Task.find().sort({ createdAt: -1 });
 };
 
-// add new task
+// create task
 const createTask = async (data) => {
   if (!data.title) {
-    throw new Error("Title is missing");
+    throw new Error("Title is required");
   }
 
-  const task = await Task.create({
+  return await Task.create({
     title: data.title
   });
-
-  return task;
 };
 
-// update task by id
+// update task
 const updateTask = async (id, data) => {
   const task = await Task.findByIdAndUpdate(id, data, { new: true });
 
@@ -41,16 +38,11 @@ const deleteTask = async (id) => {
   return task;
 };
 
-// search tasks
-const searchTasks = async (text) => {
-  const tasks = await Task.find({
-    title: {
-      $regex: text,
-      $options: "i"
-    }
+// search task
+const searchTasks = async (q) => {
+  return await Task.find({
+    title: { $regex: q, $options: "i" }
   });
-
-  return tasks;
 };
 
 module.exports = {
