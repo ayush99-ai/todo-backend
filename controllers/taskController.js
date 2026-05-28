@@ -1,66 +1,79 @@
-const Task = require("../models/Task");
+const taskService = require("../services/taskServices");
 
-// get all tasks
+// get tasks
 const getTasks = async (req, res) => {
-  const tasks = await Task.find().sort({ createdAt: -1 });
+  const tasks = await taskService.getAllTasks();
   res.json(tasks);
 };
 
 // create task
 const createTask = async (req, res) => {
   try {
-    const task = await Task.create({
+    const task = await taskService.addTask({
       title: req.body.title,
-      status: req.body.status || "pending"
+      status: req.body.status
     });
 
     res.json(task);
-  } catch (err) {
-    res.status(500).json({ message: "Error creating task" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Could not create task"
+    });
   }
 };
 
-// update task (title + status)
+// update task
 const updateTask = async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const updatedTask =
+      await taskService.updateTaskById(
+        req.params.id,
+        req.body
+      );
 
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
+    if (!updatedTask) {
+      return res.status(404).json({
+        message: "Task not found"
+      });
     }
 
-    res.json(task);
-  } catch (err) {
-    res.status(500).json({ message: "Update failed" });
+    res.json(updatedTask);
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Update failed"
+    });
   }
 };
 
 // delete task
 const deleteTask = async (req, res) => {
   try {
-    const task = await Task.findByIdAndDelete(req.params.id);
+    const deletedTask =
+      await taskService.deleteTaskById(req.params.id);
 
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
+    if (!deletedTask) {
+      return res.status(404).json({
+        message: "Task not found"
+      });
     }
 
-    res.json({ message: "Task deleted" });
-  } catch (err) {
-    res.status(500).json({ message: "Delete failed" });
+    res.json({
+      message: "Task deleted"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Delete failed"
+    });
   }
 };
 
 // search task
 const searchTask = async (req, res) => {
-  const q = req.query.q || "";
+  const text = req.query.q || "";
 
-  const tasks = await Task.find({
-    title: { $regex: q, $options: "i" }
-  });
+  const tasks = await taskService.searchTasks(text);
 
   res.json(tasks);
 };

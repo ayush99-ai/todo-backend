@@ -6,49 +6,36 @@ const getAllTasks = async () => {
 };
 
 // create task
-const createTask = async (data) => {
-  if (!data.title) {
-    throw new Error("Title is required");
-  }
-
-  return await Task.create({
-    title: data.title
-  });
+const addTask = async (data) => {
+  return await Task.create(data);
 };
 
 // update task
-const updateTask = async (id, data) => {
-  const task = await Task.findByIdAndUpdate(id, data, { new: true });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
-
-  return task;
+const updateTaskById = async (id, data) => {
+  return await Task.findByIdAndUpdate(id, data, {
+    new: true
+  });
 };
 
 // delete task
-const deleteTask = async (id) => {
-  const task = await Task.findByIdAndDelete(id);
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
-
-  return task;
+const deleteTaskById = async (id) => {
+  return await Task.findByIdAndDelete(id);
 };
 
 // search task
-const searchTasks = async (q) => {
+const searchTasks = async (text) => {
   return await Task.find({
-    title: { $regex: q, $options: "i" }
+    title: {
+      $regex: text,
+      $options: "i"
+    }
   });
 };
 
 module.exports = {
   getAllTasks,
-  createTask,
-  updateTask,
-  deleteTask,
+  addTask,
+  updateTaskById,
+  deleteTaskById,
   searchTasks
 };

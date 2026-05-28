@@ -1,17 +1,16 @@
-const { body, param, validationResult } = require("express-validator");
+const { body, validationResult } =require("express-validator");
 
-// check task input
 const createTaskValidation = [
-  body("title").notEmpty().withMessage("Please enter task title")
+  body("title")
+    .notEmpty()
+    .withMessage("Task title is required")
 ];
 
-// check id
-const idValidation = [
-  param("id").isMongoId().withMessage("Invalid id")
-];
-
-// show errors
-const validationResultHandler = (req, res, next) => {
+const validationResultHandler = (
+  req,
+  res,
+  next
+) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -25,6 +24,5 @@ const validationResultHandler = (req, res, next) => {
 
 module.exports = {
   createTaskValidation,
-  idValidation,
   validationResultHandler
 };
